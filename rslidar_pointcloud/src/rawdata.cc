@@ -810,7 +810,7 @@ int RawData::estimateTemperature(float Temper)
  *  @param pkt raw packet to unpack
  *  @param pc shared pointer to point cloud (points are appended)
  */
-void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud)
+void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud，ros::Time& T)
 {
   // check pkt header
   if (pkt.data[0] != 0x55 || pkt.data[1] != 0xAA || pkt.data[2] != 0x05 || pkt.data[3] != 0x0A)
@@ -823,6 +823,10 @@ void RawData::unpack(const rslidar_msgs::rslidarPacket& pkt, pcl::PointCloud<pcl
     unpack_RS32(pkt, pointcloud);
     return;
   }
+  
+  T.sec = (pkt.data[23]&0x1F)*3600 + (pkt.data[24]&0x3F)*60 + (pkt.data[25]&0x3F);
+  T.nsec = ((pkt.data[26]&0x03)<<8|pkt.data[27])*1e6 + ((pkt.data[28]&0x03)<<8|pkt.data[29])*1e3;
+    
   float azimuth;  // 0.01 dgree
   float intensity;
   float azimuth_diff;
