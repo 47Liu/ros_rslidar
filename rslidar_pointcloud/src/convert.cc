@@ -72,15 +72,16 @@ void Convert::processScan(const rslidar_msgs::rslidarScan::ConstPtr& scanMsg)
   }
 
   // process each packet provided by the driver
-
+  ros::Time t_array[scanMsg->packets.size()];//建立Time数组 存储MSOP包中的同步时间戳
   data_->block_num = 0;
   for (size_t i = 0; i < scanMsg->packets.size(); ++i)
   {
-    data_->unpack(scanMsg->packets[i], outPoints);
+    data_->unpack(scanMsg->packets[i], outPoints,t_array[i]);
   }
   sensor_msgs::PointCloud2 outMsg;
   pcl::toROSMsg(*outPoints, outMsg);
-
+  outMsg.header.stamp = t_array[0];//将第一个MSOP包的时间戳作为该PointCloud2 message的起始时间 
+                                   //内部数据的时间依说明书上的时间递推公式依次递推 
   output_.publish(outMsg);
 }
 }  // namespace rslidar_pointcloud
